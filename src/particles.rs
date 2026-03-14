@@ -11,7 +11,7 @@ struct Particle {
 
 impl Particle {
     pub fn new(position: Vector2, power: u32) -> Self {
-        let green = rand::gen_range(0.7, 0.99);
+        let green = rand::gen_range(700.0, 999.9);
         let min = -3.0 * power as f32;
         let max = 3.0 * power as f32;
         Particle {
@@ -21,7 +21,12 @@ impl Particle {
                 y: rand::gen_range(min, max),
             },
             alpha: rand::gen_range(0.6, 1.4),
-            color: Color::new(rand::gen_range(green, 1.0), green, 0.0, 1.0),
+            color: Color::new(
+                rand::gen_range(green, 1000.0) * 0.001,
+                green * 0.001,
+                0.0,
+                1.0,
+            ),
             remove: false,
         }
     }
@@ -48,7 +53,7 @@ impl Particle {
             self.position.x,
             self.position.y,
             8.0,
-            self.color.with_alpha(self.alpha),
+            self.color.with_alpha(self.alpha * 4.0),
         );
     }
 }

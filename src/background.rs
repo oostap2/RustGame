@@ -16,7 +16,7 @@ struct BackElement {
 impl BackElement {
     fn new() -> Self {
         Self {
-            alpha: rand::gen_range(0.0, 1.0),
+            alpha: rand::gen_range(0, 1000) as f32,
             alpha_velocity: 0.0,
             position: Vector2 { x: -99.9, y: -99.9 },
             velocity: Vector2 {
@@ -27,7 +27,9 @@ impl BackElement {
     }
 
     fn update(&mut self) {
-        self.alpha_velocity -= 0.0003 * get_frame_time();
+        if get_frame_time() < 1.0 {
+            self.alpha_velocity -= 0.3 * get_frame_time();
+        }
         self.alpha += self.alpha_velocity;
         if self.alpha < 0.0 {
             self.respawn();
@@ -39,7 +41,7 @@ impl BackElement {
 
     fn respawn(&mut self) {
         self.alpha = 0.0;
-        self.alpha_velocity = 0.001;
+        self.alpha_velocity = 1.0;
         self.position.x = rand::gen_range(0.0, screen_width());
         self.position.y = rand::gen_range(0.0, screen_height());
     }
@@ -49,7 +51,7 @@ impl BackElement {
             self.position.x,
             self.position.y,
             15.0,
-            GRAY.with_alpha(self.alpha),
+            GRAY.with_alpha(self.alpha * 0.01),
         );
     }
 }
