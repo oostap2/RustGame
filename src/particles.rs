@@ -1,45 +1,6 @@
 use crate::math::Vector2;
 use macroquad::prelude::*;
 
-pub struct Particles {
-    particles: Vec<Particle>,
-}
-
-impl Particles {
-    pub fn new() -> Self {
-        Particles {
-            particles: Vec::new(),
-        }
-    }
-
-    pub fn explosion(&mut self, position: &Vector2, power: u32) {
-        for _ in 0..power {
-            self.particles.push(Particle::new(
-                Vector2 {
-                    x: position.x,
-                    y: position.y,
-                },
-                power,
-            ));
-        }
-    }
-
-    pub fn update(&mut self) {
-        let mut remove_index = None;
-        let mut index = 0;
-        for particle in &mut self.particles {
-            particle.update();
-            if particle.remove {
-                remove_index = Some(index);
-            }
-            index += 1;
-        }
-        if let Some(index) = remove_index {
-            self.particles.remove(index);
-        }
-    }
-}
-
 struct Particle {
     position: Vector2,
     velocity: Vector2,
@@ -89,5 +50,39 @@ impl Particle {
             8.0,
             self.color.with_alpha(self.alpha),
         );
+    }
+}
+
+pub struct Particles {
+    particles: Vec<Particle>,
+}
+
+impl Particles {
+    pub fn new() -> Self {
+        Particles {
+            particles: Vec::new(),
+        }
+    }
+
+    pub fn explosion(&mut self, position: &Vector2, power: u32) {
+        for _ in 0..power {
+            self.particles.push(Particle::new(
+                Vector2 {
+                    x: position.x,
+                    y: position.y,
+                },
+                power,
+            ));
+        }
+    }
+
+    pub fn update(&mut self) {
+        for i in (0..self.particles.len()).rev() {
+            let particle = &mut self.particles[i];
+            particle.update();
+            if particle.remove {
+                self.particles.remove(i);
+            }
+        }
     }
 }

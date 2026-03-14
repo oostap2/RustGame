@@ -60,6 +60,7 @@ pub struct Enemies {
     enemies: Vec<Enemy>,
     new_count: f32,
     particles: Particles,
+    red_alpha: f32,
 }
 
 impl Enemies {
@@ -69,15 +70,15 @@ impl Enemies {
             enemies,
             new_count: 3.0,
             particles: Particles::new(),
+            red_alpha: 0.0,
         }
     }
 
     pub fn update(&mut self, streak: &mut Streak) {
         self.particles.update();
 
-        let mut remove_index = None;
-        let mut index = 0;
-        for enemy in &mut self.enemies {
+        for i in (0..self.enemies.len()).rev() {
+            let enemy = &mut self.enemies[i];
             enemy.update();
             enemy.draw();
 
@@ -86,55 +87,57 @@ impl Enemies {
                 || 100.0 + screen_width() < enemy.position.x
                 || 100.0 + screen_height() < enemy.position.y
             {
-                remove_index = Some(index);
+                self.enemies.clear();
+                streak.reset();
+                self.red_alpha = 1.0;
+                break;
             }
-            index += 1;
         }
 
         self.new_count -= get_frame_time();
-        if self.new_count <= 0.0 {
+        if self.new_count <= 0.0 && (self.enemies.len() == 0 || streak.get_current_streak() != 0) {
             self.new_count = 1.0;
             self.new_enemy();
         }
 
-        if let Some(index) = remove_index {
-            self.enemies.remove(index);
-            streak.reset();
-        }
-
         if is_mouse_button_pressed(MouseButton::Left) {
             match self.click() {
-                true => {
-                    streak.increment();
-                    if streak.get_current_streak() == 1 {
-                        for enemy in &mut self.enemies {
-                            self.particles.explosion(&enemy.position, enemy.size as u32);
-                        }
-                        self.enemies.clear()
-                    }
+                true => streak.increment(),
+                false => {
+                    streak.reset();
+                    self.enemies.clear();
+                    self.red_alpha = 1.0;
                 }
-                false => streak.reset(),
             }
+        }
+
+        if self.red_alpha != 0.0 {
+            let reduction = self.red_alpha - get_frame_time();
+            if reduction < 0.0 {
+                self.red_alpha = 0.0;
+                return;
+            }
+            draw_rectangle(
+                0.0,
+                0.0,
+                screen_width(),
+                screen_height(),
+                RED.with_alpha(self.red_alpha),
+            );
+            self.red_alpha = reduction;
         }
     }
 
     fn click(&mut self) -> bool {
-        let mut remove_index = None;
-        let mut index = 0;
-        for enemy in &mut self.enemies {
+        for i in (0..self.enemies.len()).rev() {
+            let enemy = &mut self.enemies[i];
             if enemy.hover {
                 self.particles.explosion(&enemy.position, enemy.size as u32);
-                remove_index = Some(index);
+                self.enemies.remove(i);
+                return true;
             }
-            index += 1;
         }
-
-        if let Some(index) = remove_index {
-            self.enemies.remove(index);
-            true
-        } else {
-            false
-        }
+        false
     }
 
     fn new_enemy(&mut self) {

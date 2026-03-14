@@ -1,49 +1,6 @@
 use crate::math::Vector2;
 use macroquad::prelude::*;
 
-pub struct Background {
-    elements: Vec<BackElement>,
-    theme: Theme,
-}
-
-impl Background {
-    pub fn new(count: u16) -> Self {
-        let mut elements = Vec::new();
-
-        for _ in 0..count {
-            elements.push(BackElement::new());
-        }
-        Self {
-            elements,
-            theme: Theme::White,
-        }
-    }
-
-    pub fn draw(&mut self) {
-        match self.theme {
-            Theme::Black => clear_background(BLACK),
-            Theme::White => clear_background(WHITE),
-        }
-        for element in &mut self.elements {
-            element.update();
-        }
-        if is_key_pressed(KeyCode::T) {
-            self.change_theme();
-        }
-    }
-
-    pub fn get_theme(&self) -> &Theme {
-        &self.theme
-    }
-
-    fn change_theme(&mut self) {
-        self.theme = match self.theme {
-            Theme::Black => Theme::White,
-            Theme::White => Theme::Black,
-        };
-    }
-}
-
 pub enum Theme {
     Black,
     White,
@@ -94,5 +51,48 @@ impl BackElement {
             15.0,
             GRAY.with_alpha(self.alpha),
         );
+    }
+}
+
+pub struct Background {
+    elements: Vec<BackElement>,
+    theme: Theme,
+}
+
+impl Background {
+    pub fn new(count: u16) -> Self {
+        let mut elements = Vec::new();
+
+        for _ in 0..count {
+            elements.push(BackElement::new());
+        }
+        Self {
+            elements,
+            theme: Theme::White,
+        }
+    }
+
+    pub fn draw(&mut self) {
+        match self.theme {
+            Theme::Black => clear_background(BLACK),
+            Theme::White => clear_background(WHITE),
+        }
+        for element in &mut self.elements {
+            element.update();
+        }
+        if is_key_pressed(KeyCode::T) {
+            self.change_theme();
+        }
+    }
+
+    pub fn get_theme(&self) -> &Theme {
+        &self.theme
+    }
+
+    fn change_theme(&mut self) {
+        self.theme = match self.theme {
+            Theme::Black => Theme::White,
+            Theme::White => Theme::Black,
+        };
     }
 }
